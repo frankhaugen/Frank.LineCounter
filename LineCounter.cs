@@ -31,24 +31,36 @@ namespace Frank.LineCounter
                 }
             }
 
-            _files = _currentDirectory.EnumerateFiles("*.cs", SearchOption.AllDirectories).Where(f => f.DirectoryName != null && !f.DirectoryName.StartsWith('.') || f.DirectoryName.Contains("Migrations")).ToList();
+            _files = _currentDirectory.EnumerateFiles("*.cs", SearchOption.AllDirectories).Where(f => f.DirectoryName != null).ToList();
 
             var fileData = GetFileData();
             if (fileData.Any())
             {
-                Console.Out.WriteLine($"Number of C# -files:\t{fileData.Count}");
-                Console.Out.WriteLine($"Total number of text-lines:\t{fileData.Select(fd => fd.TextLineCount).Sum()}");
-                Console.Out.WriteLine($"Total number of code-lines:\t{fileData.Select(fd => fd.CodeLineCount).Sum()}");
-                Console.Out.WriteLine($"Average number of text-lines:\t{fileData.Select(fd => fd.TextLineCount).Sum() / fileData.Count}");
-                Console.Out.WriteLine($"Average number of code-lines:\t{fileData.Select(fd => fd.CodeLineCount).Sum() / fileData.Count}");
-                Console.Out.WriteLine($"Total number of file breaking the 150-rule:\t{fileData.Count(data => data.TextLineCount > 150)}");
-                Console.Out.WriteLine($"Total number of file breaking the 50-rule:\t{fileData.Count(data => data.CodeLineCount > 50)}");
-                Console.Out.WriteLine($"Total number of file breaking both rules:\t{fileData.Count(data => data.CodeLineCount > 50 && data.TextLineCount > 150)}");
+                try
+                {
+                    Console.Out.WriteLine($"Number of C# -files:\t{fileData.Count}");
+                    Console.Out.WriteLine($"Total number of text-lines:\t{fileData.Select(fd => fd.TextLineCount).Sum()}");
+                    Console.Out.WriteLine($"Total number of code-lines:\t{fileData.Select(fd => fd.CodeLineCount).Sum()}");
+                    Console.Out.WriteLine($"Average number of text-lines:\t{fileData.Select(fd => fd.TextLineCount).Sum() / fileData.Count}");
+                    Console.Out.WriteLine($"Average number of code-lines:\t{fileData.Select(fd => fd.CodeLineCount).Sum() / fileData.Count}");
+                    Console.Out.WriteLine($"Total number of file breaking the 150-rule:\t{fileData.Count(data => data.TextLineCount > 150)}");
+                    Console.Out.WriteLine($"Total number of file breaking the 50-rule:\t{fileData.Count(data => data.CodeLineCount > 50)}");
+                    Console.Out.WriteLine($"Total number of file breaking both rules:\t{fileData.Count(data => data.CodeLineCount > 50 && data.TextLineCount > 150)}");
 
-                ConsoleTableBuilder
-                    .From(fileData.Where(fd => fd.CodeLineCount > 50 || fd.TextLineCount > 150).ToList())
-                    .WithFormat(ConsoleTableBuilderFormat.Minimal)
-                    .ExportAndWriteLine();
+                    ConsoleTableBuilder
+                        .From(fileData.Where(fd => fd.CodeLineCount > 50 || fd.TextLineCount > 150).ToList())
+                        .WithFormat(ConsoleTableBuilderFormat.Minimal)
+                        .ExportAndWriteLine();
+                }
+                catch
+                {
+                    Console.WriteAscii("Congratulations!");
+                    Console.WriteLine("No file is breaking the rules!");
+                }
+            }
+            else
+            {
+                Console.WriteLine("No files found!");
             }
             _stopwatch.Stop();
 
